@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>元旦快乐</title>
+    <meta name=description content="">
+    <meta name=keywords content="">
+
+   <!-- <script src="//wechatfe.github.io/vconsole/lib/vconsole.min.js?v=3.0.0.0"></script>-->
+
+    <script src='http://weibo.gatz.citic/res/js/qingjs.js'></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script>
+        (function(doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function() {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    docEl.style.fontSize = 625 * (clientWidth / 750) + '%';
+                };
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window);
+    </script>
+
+</head>
+
+<body>
+    <div id="app-box"></div>
+
+    <div class="music" style="display: none;">
+        <audio id="bgm" src="https://img.guoanfamily.com/newyear/music/bgm.mp3" autoplay loop></audio>
+
+        <audio id="success" src="https://img.guoanfamily.com/newyear/music/success.mp3" preload></audio>
+    </div>
+</body>
+
+</html>
+<script>
+     /*var vConsole = new VConsole();*/
+
+     var BGM = document.getElementById("bgm");
+     var SUCCESS = document.getElementById("success");
+
+     function playBGM() {
+         BGM.play();
+     }
+
+     function playSuccess() {
+         SUCCESS.currentTime = 0;
+         SUCCESS.play();
+     }
+
+
+</script>
