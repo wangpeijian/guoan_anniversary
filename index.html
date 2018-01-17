@@ -4,56 +4,542 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
-    <title>元旦快乐</title>
+    <title>周年</title>
     <meta name=description content="">
     <meta name=keywords content="">
 
-   <!-- <script src="//wechatfe.github.io/vconsole/lib/vconsole.min.js?v=3.0.0.0"></script>-->
+    <script type="text/javascript" src="./static/lib/decomp.js"></script>
+    <script type="text/javascript" src="./static/lib/pathseg.js"></script>
+    <script src="./static/matter.js"></script>
 
-    <script src='http://weibo.gatz.citic/res/js/qingjs.js'></script>
-    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
-    <script>
-        (function(doc, win) {
-            var docEl = doc.documentElement,
-                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
-                recalc = function() {
-                    var clientWidth = docEl.clientWidth;
-                    if (!clientWidth) return;
-                    docEl.style.fontSize = 625 * (clientWidth / 750) + '%';
-                };
-            if (!doc.addEventListener) return;
-            win.addEventListener(resizeEvt, recalc, false);
-            doc.addEventListener('DOMContentLoaded', recalc, false);
-        })(document, window);
-    </script>
+    <style>
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
+        body{
+            height: 100%;
+            background: #00011c;
+            transform: translate3d(0,0,0);
+        }
+    </style>
 </head>
 
 <body>
-    <div id="app-box"></div>
+<div id="app-box">
+    <div class="game-box" id="game-box"></div>
 
-    <div class="music" style="display: none;">
-        <audio id="bgm" src="https://img.guoanfamily.com/newyear/music/bgm.mp3" autoplay loop></audio>
-
-        <audio id="success" src="https://img.guoanfamily.com/newyear/music/success.mp3" preload></audio>
+    <div style="display: none">
+        <img src="./static/img/ball1.png" alt="">
+        <img src="./static/img/ball2.png" alt="">
+        <img src="./static/img/ball3.png" alt="">
+        <img src="./static/img/ball4.png" alt="">
     </div>
+</div>
 </body>
-
 </html>
+
+
 <script>
-     /*var vConsole = new VConsole();*/
+    const viewX = 1400;
+    const viewY = 1400;
+    const borderWidth = 1800;
+    const borderHeight = 1700;
+    const wallWidth = 40;
+    const boxSizeWidth = 1000;
+    const boxSizeHeight = 800;
+    const paddingTop = 80;
+    const ballSize = 40;
+    const ballTexture = './static/img/ball.png';
 
-     var BGM = document.getElementById("bgm");
-     var SUCCESS = document.getElementById("success");
+    const backgroundTexture = './static/img/background.png';
+    const ballsTexture = ['./static/img/ball1.png', './static/img/ball2.png', './static/img/ball3.png', './static/img/ball4.png'];
+    const heightTexture = './static/img/height.png';
+    const widthTexture = './static/img/width.png';
+    const shortTexture = './static/img/short.png';
+    const stickTexture = './static/img/stick.png';
 
-     function playBGM() {
-         BGM.play();
-     }
+    const Engine = Matter.Engine,
+        Render = Matter.Render,
+        Runner = Matter.Runner,
+        Body = Matter.Body,
+        Events = Matter.Events,
+        Composite = Matter.Composite,
+        Composites = Matter.Composites,
+        Common = Matter.Common,
+        Constraint = Matter.Constraint,
+        MouseConstraint = Matter.MouseConstraint,
+        Mouse = Matter.Mouse,
+        World = Matter.World,
+        Vertices = Matter.Vertices,
+        Bodies = Matter.Bodies;
 
-     function playSuccess() {
-         SUCCESS.currentTime = 0;
-         SUCCESS.play();
-     }
+    let engine = null;
+    let render = null;
+    let runner = null;
+    let world = null;
+
+    (function () {
+        engine = Engine.create({});
+        world = engine.world;
+
+        render = Render.create({
+            element: document.getElementById("game-box"),
+            engine: engine,
+            options: {
+                width: 1200,
+                height: 1000,
+                showAngleIndicator: true,
+                wireframes: false,
+                background: backgroundTexture,
+            }
+        });
+
+        Render.run(render);
+
+        runner = Runner.create();
+        Runner.run(runner, engine);
+    })();
+
+    (function () {
+        Render.lookAt(render, {
+            min: {x: 0, y: 0},
+            max: {x: viewX, y: viewY}
+        });
+
+        // 添加鼠标控制
+        const mouse = Mouse.create(render.canvas),
+            mouseConstraint = MouseConstraint.create(engine, {
+                mouse: mouse,
+                constraint: {
+                    stiffness: 0.2,
+                    render: {
+                        visible: false
+                    }
+                }
+            });
+
+        World.add(world, mouseConstraint);
+        render.mouse = mouse;
+    })();
+
+    let people = ["杨小航", "赵钺", "付贵森", "付强",
+        "张西玲", "刘建", "徐辉", "马斌", "谷耀峰",
+        "付佳炜", "张紫晨", "宋红京", "王隽", "李斌",
+        "张志玉", "张锐", "崔屾", "李瑞娟", "周美景",
+        "赵迅", "王文博", "刘啸", "胡春明", "张娜",
+        "廖伟庆", "时春艳", "郭洁", "王泽岗", "于海洋",
+        "张秀云", "张同乐", "金晓芳", "孙明", "张萌萌",
+        "王迪", "王子轩", "曹东", "周启鑫", "林洲", "刘超",
+        "张博", "余世祥", "白文", "王建志", "张少东", "焦彭通",
+        "范治磊", "陈永挺", "刘鸿晶", "张涛", "卿卫文", "刘勇", "邹肖琳",
+        "谢冰", "肖成伟", "李晓丹", "王诗尧", "赵贵全", "李克岩",
+        "郑钢", "杨高", "刘先智", "赵博飞", "程都", "刘禹良",
+        "段智夫", "孙鑫", "郁洋", "陶启森", "宋峰", "李泽国",
+        "吕瑞雪", "池白露", "陶斯亮", "陈炎", "柴治田", "王敬峰",
+        "杨金垚", "桑登科", "胡莎", "姜娣", "李秋晨", "童能能",
+        "李丝雨", "王佩剑"];
+
+    //当前选中的人
+    let currentPeople = [];
+
+    //特等奖名单
+    let superPeople = [];
+    //一等奖名单
+    let onePeople = [];
+    //二等奖名单
+    let twoPeople = [];
+    //三等奖名单
+    let threePeople = [];
+
+    let centerBottom = null;
+    let trackLeft = null;
+    let stick = null;
+    let balls = null;
+
+    let startRotate = true;
+    let startExtract = false;
+    let canIClickBlankSpace = true;
+
+    let selectPeopleNumber = 10;
+
+    (function () {
+        // 添加整体边框
+        World.add(world, [
+            Bodies.rectangle(viewX / 2, 0, borderWidth, wallWidth, {isStatic: true,
+                render: {
+                    fillStyle: "#00011c50",
+                }
+            }),
+            Bodies.rectangle(viewX / 2, borderHeight, borderWidth, wallWidth, {isStatic: true,
+                angle: Math.PI * 0.02,
+                render: {
+                    sprite: {
+                        xScale: 5,
+                        texture: widthTexture,
+                    }
+                }}),
+            Bodies.rectangle(viewX / 2 + borderWidth / 2, viewY / 2, wallWidth, borderHeight, {isStatic: true,
+                render: {
+                    fillStyle: "#00011c50",
+                }}),
+            Bodies.rectangle(viewX / 2 - borderWidth / 2, viewY / 2, wallWidth, borderHeight, {isStatic: true,
+                render: {
+                    fillStyle: "#00011c50",
+                }})
+        ]);
+
+        let wallWidth2 = wallWidth;
+        //  盒子底部挡板
+        const leftBottom = Bodies.rectangle((viewX - boxSizeWidth / 2) / 2 - 2 * wallWidth, boxSizeHeight + paddingTop + 2 * wallWidth, boxSizeWidth / 2.4, wallWidth2, {
+            isStatic: true,
+            chamfer: wallWidth,
+            angle: Math.PI * 0.1,
+            render: {
+                sprite: {
+                    yScale: 1.5,
+                    xScale: .8,
+                    texture: widthTexture,
+                }
+            }
+        });
+        const rightBottom = Bodies.rectangle((viewX - boxSizeWidth / 2) / 2 + boxSizeWidth / 2 + 2 * wallWidth, boxSizeHeight + paddingTop + 2 * wallWidth, boxSizeWidth / 2.4, wallWidth2, {
+            isStatic: true,
+            chamfer: wallWidth,
+            angle: -Math.PI * 0.1,
+            render: {
+                sprite: {
+                    yScale: 1.5,
+                    xScale: .8,
+                    texture: widthTexture,
+                }
+            }
+        });
+        centerBottom = Bodies.rectangle(viewX / 2, boxSizeHeight + paddingTop + 3.5 * wallWidth, 7 * wallWidth, wallWidth2, {
+            isStatic: true,
+            chamfer: wallWidth,
+            render: {
+                sprite: {
+                    yScale: 1.5,
+                    xScale: 3,
+                    texture: shortTexture,
+                }
+            }
+        });
+
+        //  抽奖盒子
+        World.add(world, [
+            Bodies.rectangle((viewX - boxSizeWidth) / 2 + boxSizeWidth / 2, paddingTop, boxSizeWidth + wallWidth, wallWidth2, {isStatic: true,
+                render: {
+                    sprite: {
+                        yScale: 1.5,
+                        xScale: 2.05,
+                        texture: widthTexture,
+                    }
+                }}),
+            Bodies.rectangle((viewX - boxSizeWidth) / 2 + boxSizeWidth, boxSizeHeight / 2 + paddingTop + 10, wallWidth2, boxSizeHeight + 2 *  wallWidth, {isStatic: true,
+                render: {
+                    sprite: {
+                        yScale: 1.95,
+                        xScale: 1.5,
+                        texture: heightTexture,
+                    }
+                }}),
+            //底部挡板换成两个挡板
+            leftBottom,
+            rightBottom,
+            centerBottom,
+            Bodies.rectangle((viewX - boxSizeWidth) / 2, boxSizeHeight / 2 + paddingTop + 10, wallWidth2, boxSizeHeight +  2 *  wallWidth, {isStatic: true,
+                render: {
+                    sprite: {
+                        yScale: 1.95,
+                        xScale: 1.5,
+                        texture: heightTexture,
+                    }
+                }})
+        ]);
+
+        //添加收球轨道
+        let trackY = boxSizeHeight + paddingTop + boxSizeHeight * .5;
+        let track = Bodies.rectangle(viewX / 2 - ballSize * 6, trackY - 50, ballSize * 26, wallWidth, {
+            isStatic: true, angle: -Math.PI * 0.03,
+            render: {
+                sprite: {
+                    yScale: 1,
+                    xScale: 2.1,
+                    texture: widthTexture,
+                }
+            }
+        });
+        trackLeft = Bodies.rectangle(viewX / 2 - ballSize * 18 - wallWidth, trackY - ballSize * 3 + wallWidth / 2, wallWidth, ballSize * 6, {
+            isStatic: true,
+            render: {
+                sprite: {
+                    yScale: .5,
+                    xScale: 1,
+                    texture: heightTexture,
+                }
+            }
+        });
+        //let trackRight = Bodies.rectangle(viewX / 2 +  ballSize * 2, trackY - wallWidth, wallWidth, ballSize * 3, {isStatic: true});
+        World.add(world, [
+            track,
+            trackLeft,
+            //trackRight
+        ]);
+
+        //  抽奖盒子旋转的棍子
+        stick = Bodies.rectangle((viewX - boxSizeWidth) / 2 + boxSizeWidth / 2, boxSizeHeight / 2 + (boxSizeWidth - boxSizeHeight) / 2 + 80, boxSizeHeight - 80, wallWidth, {
+            isStatic: true,
+            chamfer: wallWidth / 2,
+            render: {
+                sprite: {
+                    yScale: 1,
+                    xScale: 1.7,
+                    texture: stickTexture,
+                }
+            }
+        });
+        World.add(world, stick);
+
+        let rotateAngle = 0;
+        Events.on(engine, 'beforeUpdate', (event) => {
+            //  转动抽奖棍子
+            if (startRotate) {
+                rotateAngle += 0.02;
+                if (rotateAngle >= 2) {
+                    rotateAngle = 0;
+                }
+
+                Body.setAngle(stick, Math.PI * rotateAngle)
+            } else {
+                //Body.setAngle(stick, Math.PI * 0.1)
+            }
+
+            if (startExtract) {
+                for(let index in balls.bodies){
+
+                    let body = balls.bodies[index];
+
+                    if (body.position.y > 1020) {
+                        if(!currentPeople.includes(index)){
+                            currentPeople.push(index);
+                            //添加到对应的人名单中
+                            $GAME.updateRank(index)
+                            --selectPeopleNumber;
+                        }
+
+                        if (selectPeopleNumber <= 0) {
+
+                            for(let o of currentPeople){
+                                console.log("任命",people[o]);
+                            }
+
+                            $GAME.stopExtract();
+
+                            setTimeout(()=>{
+                                console.log(balls.bodies.length)
+                                for(let index in balls.bodies){
+                                    let body = balls.bodies[index];
+                                    if (body.position.y > 1010) {
+                                        if(!currentPeople.includes(index)){
+                                            console.log("------放回去-------",index, people[index]);
+
+                                            body.position.x = (viewX - boxSizeWidth) / 2 + wallWidth;
+                                            body.position.y = paddingTop + wallWidth;
+                                        }
+                                    }
+                                }
+
+                                for(let index of currentPeople){
+                                    let ball = balls.bodies[index]
+                                   // console.log(ball.position.y, people[index])
+                                    if(ball.position.y < 1020){
+                                        console.log("------放出来-------",index, people[index]);
+
+                                        ball.position.x = viewX / 2;
+                                        ball.position.y = 1060;
+                                    }
+                                }
+                            }, 500);
+
+                            break;
+                        }
+                    }
+                }
+
+            }
+
+        });
+    })();
+
+    const $GAME = {
+        startRotate:()=>{
+            startRotate = true;
+        },
+
+        stopRotate:()=>{
+            startRotate = false;
+        },
+
+        startExtract: ()=>{
+            startExtract = true;
+            Matter.Body.setAngle(centerBottom, -Math.PI * 0.2);
+            Matter.Body.setPosition(centerBottom, { x: viewX / 2 + 60 , y: boxSizeHeight + 285 });
+            $GAME.stopRotate();
+
+            let trackY = boxSizeHeight + paddingTop + boxSizeHeight * .5;
+            Matter.Body.setPosition(trackLeft, { x: viewX / 2 - ballSize * 18 - wallWidth, y: trackY - ballSize * 3 + wallWidth / 2 });
+        },
+
+        stopExtract:()=>{
+            startExtract = false;
+            Matter.Body.setAngle(centerBottom, 0);
+            Matter.Body.setPosition(centerBottom, { x: viewX / 2, y: boxSizeHeight + paddingTop + 3.5 * wallWidth });
+
+            $GAME.startRotate();
+
+            canIClickBlankSpace = false;
+            setTimeout(()=>{
+                let trackY = boxSizeHeight + paddingTop + boxSizeHeight * .5;
+                Matter.Body.setPosition(trackLeft, { x: viewX / 2 - ballSize * 18 - wallWidth, y: trackY - 6 *wallWidth });
+                canIClickBlankSpace = true;
+            }, 5000)
+        },
+
+        refreshBall: ()=>{
+            let index = ballsTexture.length;
+            let load = ()=>{
+                index--;
+                if(index === 0){
+                    let index = 0;
+                    let height = parseInt(people.length / 10) + 1;
+                    //加入抽奖人小球
+                    balls = Composites.stack((viewX - boxSizeWidth) / 2 + wallWidth, paddingTop + wallWidth, 10, height, 0, 0, (x, y) => {
+
+                        let id = index++;
+
+                        if (id > people.length - 1) {
+                            return;
+                        }
+
+                        let image = new Image();
+                        image.src = ballsTexture[index % ballsTexture.length];
+                        let balltext = document.createElement("canvas");
+                        balltext.width = 115;
+                        balltext.height = 115;
+                        balltext.getContext("2d").drawImage(image, 0, 0);
+                        balltext.getContext("2d").fillStyle="#333";
+                        balltext.getContext("2d").font=" 25px 微软雅黑"; //bold
+                        if(people[id].length === 3){
+                            balltext.getContext("2d").fillText(people[id] ,20,60);
+                        }else{
+                            balltext.getContext("2d").fillText(people[id] ,30,60);
+                        }
+
+                        balltext.getContext("2d").textAlign = "center";
+
+                        return Bodies.circle(x, y, ballSize, {
+                            density: 100,
+                            frictionAir: 0.000001,
+                            restitution: 0,
+                            friction: 0.000001,
+                            render: {
+                                sprite: {
+                                    xScale: .9,
+                                    yScale: .9,
+                                    texture: balltext.toDataURL("image/png"),
+                                    // text: id,
+                                }
+                            }
+                        });
+                    });
+
+                    World.add(world, balls);
+                }
+            };
+
+            for(let i = 0; i < ballsTexture.length; i++ ){
+                let image = new Image();
+                image.src = ballsTexture[i];
+                image.onload = load;
+            }
+
+        },
+
+        updateRank: (index) => {
+            console.log(index)
+        }
+    };
+
+    $GAME.refreshBall();
 
 
+    let gameStep = 0;
+    document.onkeyup = e => {
+        e = e || event;
+        let currKey = e.keyCode || e.which || e.charCode;
+        if (currKey === 32) {
+
+            if(startExtract || !canIClickBlankSpace){
+                // console.log("阻止")
+                return;
+            }
+
+            // console.log("穿过了", startExtract, canIClickBlankSpace);
+
+            switch (++gameStep){
+                //三等奖 10人 三轮
+                case 1:
+                    selectPeopleNumber = 10;
+                    $GAME.startExtract();
+                    break;
+                case 2:
+                    selectPeopleNumber = 10;
+                    $GAME.startExtract();
+                    break;
+                case 3:
+                    selectPeopleNumber = 10;
+                    $GAME.startExtract();
+                    break;
+
+
+                //二等奖 5人 四轮
+                case 4:
+                    selectPeopleNumber = 5;
+                    $GAME.startExtract();
+                    break;
+                case 5:
+                    selectPeopleNumber = 5;
+                    $GAME.startExtract();
+                    break;
+                case 6:
+                    selectPeopleNumber = 5;
+                    $GAME.startExtract();
+                    break;
+                case 7:
+                    selectPeopleNumber = 5;
+                    $GAME.startExtract();
+                    break;
+
+                //一等奖 5人 一轮
+                case 8:
+                    selectPeopleNumber = 5;
+                    $GAME.startExtract();
+                    break;
+
+                //特等奖 1人 一轮
+                case 9:
+                    selectPeopleNumber = 1;
+                    $GAME.startExtract();
+                    break;
+                default:
+                    alert("抽奖结束")
+
+            }
+
+        }
+    };
 </script>
