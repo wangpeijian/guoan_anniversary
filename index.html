@@ -23,13 +23,37 @@
             height: 100%;
             background: #00011c;
             transform: translate3d(0,0,0);
+            padding-top: 50px;
         }
+
+        .game-box{
+
+        }
+
+        .rank-block{
+            position: fixed;
+            left: 1000px;
+            top: 50px;
+        }
+
+        .rank-label{
+            color: #fff;
+            text-align: center
+        ;
+        }
+
     </style>
 </head>
 
 <body>
 <div id="app-box">
     <div class="game-box" id="game-box"></div>
+
+    <div class="rank-block">
+        <image src="./static/img/rankTitle.png"></image>
+
+        <div class="rank-label" id="rankLabel">一等奖</div>
+    </div>
 
     <div style="display: none">
         <img src="./static/img/ball1.png" alt="">
@@ -91,7 +115,7 @@
             options: {
                 width: 1200,
                 height: 1000,
-                showAngleIndicator: true,
+                showAngleIndicator: false,
                 wireframes: false,
                 background: backgroundTexture,
             }
@@ -340,7 +364,7 @@
                             $GAME.stopExtract();
 
                             setTimeout(()=>{
-                                console.log(balls.bodies.length)
+                                //console.log(balls.bodies.length)
                                 for(let index in balls.bodies){
                                     let body = balls.bodies[index];
                                     if (body.position.y > 1010) {
