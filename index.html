@@ -111,9 +111,10 @@
     const borderHeight = 1700;
     const wallWidth = 40;
     const paddingTop = 80;
-    const ballSize = 40;
+    const ballSize = 45;
 
-    const ballsTexture = ['./static/img/ball1Texture.png', './static/img/ball2Texture.png', './static/img/ball3Texture.png', './static/img/ball4Texture.png'];
+    const ballsTexture = [ './static/img/ball2Texture.png', './static/img/ball3Texture.png'];
+    const ballsColor = ['#fcff00', "#fcff00"];
     const stickTexture = './static/img/stickTexture.png';
     const slopeTexture = './static/img/slopeTexture.png';
     const middleTexture = './static/img/middleTexture.png';
@@ -194,7 +195,7 @@
         "张秀云", "张同乐", "金晓芳", "孙明", "张萌萌",
         "王迪", "王子轩", "曹东", "周启鑫", "林洲", "刘超",
         "张博", "余世祥", "白文", "王建志", "张少东", "焦彭通",
-        "范治磊", "陈永挺", "刘鸿晶", "张涛", "卿卫文", "刘勇", "邹肖琳",
+        "范治磊", "陈永廷", "刘鸿晶", "张涛", "卿卫文", "刘勇", "邹肖琳",
         "谢冰", "肖成伟", "李晓丹", "王诗尧", "赵贵全", "李克岩",
         "郑钢", "杨高", "刘先智", "赵博飞", "程都", "刘禹良",
         "段智夫", "孙鑫", "郁洋", "陶启森", "宋峰", "李泽国",
@@ -493,15 +494,15 @@
                         let image = new Image();
                         image.src = ballsTexture[index % ballsTexture.length];
                         let balltext = document.createElement("canvas");
-                        balltext.width = 115;
-                        balltext.height = 115;
-                        balltext.getContext("2d").drawImage(image, 0, 0);
-                        balltext.getContext("2d").fillStyle = "#333";
+                        balltext.width = ballSize * 2;
+                        balltext.height = ballSize * 2;
+                        balltext.getContext("2d").drawImage(image, 0, 0, 40, 40, 0, 0, ballSize * 2, ballSize * 2);
+                        balltext.getContext("2d").fillStyle = ballsColor[index % ballsColor.length];
                         balltext.getContext("2d").font = "bold 25px 微软雅黑"; //bold
                         if (people[id].length === 3) {
-                            balltext.getContext("2d").fillText(people[id], 20, 60);
+                            balltext.getContext("2d").fillText(people[id], 10, 50);
                         } else {
-                            balltext.getContext("2d").fillText(people[id], 30, 60);
+                            balltext.getContext("2d").fillText(people[id], 20, 50);
                         }
 
                         balltext.getContext("2d").textAlign = "center";
@@ -513,8 +514,6 @@
                             friction: 0.000001,
                             render: {
                                 sprite: {
-                                    xScale: .9,
-                                    yScale: .9,
                                     texture: balltext.toDataURL("image/png"),
                                 }
                             }
