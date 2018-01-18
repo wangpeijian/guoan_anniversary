@@ -20,9 +20,12 @@
             padding: 0;
         }
 
-        body {
+        html, body{
             height: 100%;
-            background: url('./static/img/background.png') center / cover no-repeat;
+        }
+
+        body {
+            background: #00011c url('./static/img/background.jpg') center / cover no-repeat;
             transform: translate3d(0, 0, 0);
         }
 
@@ -61,8 +64,8 @@
         }
 
         .rank-list .item {
-            background: #fff;
-            border: 2px solid #d11c1a;
+            background: #003cff80;
+            border: 2px solid #f7ee26;
             border-radius: 10px;
             line-height: 30px;
             text-align: center;
@@ -70,6 +73,7 @@
             margin: 5px 1.5%;
             float: left;
             font-size: 16px;
+            color: #f7ee26;
         }
     </style>
 </head>
@@ -157,28 +161,28 @@
 
         runner = Runner.create();
         Runner.run(runner, engine);
-    })();
 
-    (function () {
         Render.lookAt(render, {
             min: {x: 0, y: 0},
             max: {x: viewX, y: viewY}
         });
+    })();
 
+    (function () {
         // 添加鼠标控制
-        const mouse = Mouse.create(render.canvas),
-            mouseConstraint = MouseConstraint.create(engine, {
-                mouse: mouse,
-                constraint: {
-                    stiffness: 0.2,
-                    render: {
-                        visible: false
-                    }
-                }
-            });
-
-        World.add(world, mouseConstraint);
-        render.mouse = mouse;
+        // const mouse = Mouse.create(render.canvas),
+        //     mouseConstraint = MouseConstraint.create(engine, {
+        //         mouse: mouse,
+        //         constraint: {
+        //             stiffness: 0.2,
+        //             render: {
+        //                 visible: false
+        //             }
+        //         }
+        //     });
+        //
+        // World.add(world, mouseConstraint);
+        // render.mouse = mouse;
     })();
 
     let people = ["杨小航", "赵钺", "付贵森", "付强",
@@ -326,6 +330,7 @@
                 }
             }
         });
+
         World.add(world, [
             track,
             trackLeft,
@@ -340,6 +345,7 @@
                 }
             }
         });
+
         World.add(world, stick);
 
         let rotateAngle = 0;
@@ -441,14 +447,10 @@
 
             //将底部小球全部移动到一侧
             for (let index in balls.bodies) {
-
                 let body = balls.bodies[index];
-
                 if (body.position.x < 300 && body.position.y > 1200) {
                     Matter.Body.setPosition(body, {x: 1500, y: 1200});
                 }
-
-
             }
         },
 
@@ -543,7 +545,7 @@
                 type = "two";
             } else if (gameStep === 8) {
                 type = "one";
-            } else if (gameStep === 9) {
+            } else if (gameStep <= 10) {
                 type = "super";
             }
 
@@ -614,8 +616,12 @@
                     $GAME.startExtract();
                     break;
 
-                //特等奖 1人 一轮
+                //特等奖 2人 二轮
                 case 9:
+                    selectPeopleNumber = 1;
+                    $GAME.startExtract();
+                    break;
+                case 10:
                     selectPeopleNumber = 1;
                     $GAME.startExtract();
                     break;
