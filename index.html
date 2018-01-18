@@ -8,39 +8,69 @@
     <meta name=description content="">
     <meta name=keywords content="">
 
+    <script src="//cdn.bootcss.com/zepto/1.0rc1/zepto.min.js"></script>
     <script type="text/javascript" src="./static/lib/decomp.js"></script>
     <script type="text/javascript" src="./static/lib/pathseg.js"></script>
     <script src="./static/matter.js"></script>
 
     <style>
-        *{
+        * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        body{
+        body {
             height: 100%;
             background: url('./static/img/background.png') center / cover no-repeat;
-            transform: translate3d(0,0,0);
-            //padding-top: 50px;
+            transform: translate3d(0, 0, 0);
         }
 
-        .game-box canvas{
-			margin:  0 auto;
-			display: block;
+        .game-box canvas {
+            margin: 0 auto;
+            display: block;
         }
 
-        .rank-block{
+        .rank-block {
             position: fixed;
             left: 900px;
             top: 0;
+            bottom: 0;
             width: 265px;
-            //background: #fff;
-            height: 800px;
+        / / background: #00000042;
         }
 
+        .rank-label {
+            border: 2px solid #d07000;
+            border-radius: 5px;
+            line-height: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #f0c800;
+            width: 160px;
+            background: #d20804 linear-gradient(-45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+            background-size: 40px 40px;
+            position: absolute;
+            top: 94px;
+            left: 50px;
+            font-size: 24px;
+        }
 
+        .rank-list {
+            overflow: hidden;
+        }
+
+        .rank-list .item {
+            background: #fff;
+            border: 2px solid #d11c1a;
+            border-radius: 10px;
+            line-height: 30px;
+            text-align: center;
+            width: 30%;
+            margin: 5px 1.5%;
+            float: left;
+            font-size: 16px;
+        }
     </style>
 </head>
 
@@ -49,18 +79,19 @@
     <div class="game-box" id="game-box"></div>
 
     <div class="rank-block">
-        <image src="./static/img/rankTitle.png" />
+        <image src="./static/img/rankTitle.png"/>
+        <div class="rank-label" id="rankLabel">三等奖</div>
 
+        <div class="rank-list" id="rankList">
 
-		
-        <div class="rank-label" id="rankLabel">一等奖</div>
+        </div>
     </div>
 
     <div style="display: none">
-        <img src="./static/img/ball1.png" alt="">
-        <img src="./static/img/ball2.png" alt="">
-        <img src="./static/img/ball3.png" alt="">
-        <img src="./static/img/ball4.png" alt="">
+        <img src="./static/img/ball1Texture.png" alt="">
+        <img src="./static/img/ball2Texture.png" alt="">
+        <img src="./static/img/ball3Texture.png" alt="">
+        <img src="./static/img/ball4Texture.png" alt="">
     </div>
 </div>
 </body>
@@ -68,23 +99,23 @@
 
 
 <script>
+    localStorage.clear();
+
     const viewX = 1700;
     const viewY = 1700;
     const borderWidth = 2400;
     const borderHeight = 1700;
     const wallWidth = 40;
-    const boxSizeWidth = 1000;
-    const boxSizeHeight = 800;
     const paddingTop = 80;
     const ballSize = 40;
-    const ballTexture = './static/img/ball.png';
 
-    const backgroundTexture = './static/img/background.png';
-    const ballsTexture = ['./static/img/ball1.png', './static/img/ball2.png', './static/img/ball3.png', './static/img/ball4.png'];
-    const heightTexture = './static/img/height.png';
-    const widthTexture = './static/img/width.png';
-    const shortTexture = './static/img/short.png';
-    const stickTexture = './static/img/stick.png';
+    const ballsTexture = ['./static/img/ball1Texture.png', './static/img/ball2Texture.png', './static/img/ball3Texture.png', './static/img/ball4Texture.png'];
+    const stickTexture = './static/img/stickTexture.png';
+    const slopeTexture = './static/img/slopeTexture.png';
+    const middleTexture = './static/img/middleTexture.png';
+    const boxWidthTexture = './static/img/boxWidthTexture.png';
+    const boxHeightTexture = './static/img/boxHeightTexture.png';
+    const trackObstructTexture = './static/img/trackObstructTexture.png';
 
     const Engine = Matter.Engine,
         Render = Matter.Render,
@@ -170,15 +201,6 @@
     //当前选中的人
     let currentPeople = [];
 
-    //特等奖名单
-    let superPeople = [];
-    //一等奖名单
-    let onePeople = [];
-    //二等奖名单
-    let twoPeople = [];
-    //三等奖名单
-    let threePeople = [];
-
     let centerBottom = null;
     let trackLeft = null;
     let stick = null;
@@ -190,140 +212,130 @@
 
     let selectPeopleNumber = 10;
 
+    let $rankLabel = $("#rankLabel");
+    let $rankList = $("#rankList");
+
     (function () {
         // 添加整体边框
         World.add(world, [
-            Bodies.rectangle(viewX / 2, 0, borderWidth, wallWidth, {isStatic: true,
+            Bodies.rectangle(viewX / 2, 0, borderWidth, wallWidth, {
+                isStatic: true,
                 render: {
                     fillStyle: "#00011c00",
                 }
             }),
-            Bodies.rectangle(viewX / 2, borderHeight - 100, borderWidth * 2, wallWidth, {isStatic: true,
+            Bodies.rectangle(viewX / 2, borderHeight - 100, borderWidth * 2, wallWidth, {
+                isStatic: true,
                 angle: Math.PI * 0.03,
                 render: {
-                    sprite: {
-                    yScale: 1,
-                    xScale: 8,
-                    texture: widthTexture,
+                    fillStyle: "#71879360",
                 }
-                }}),
-            Bodies.rectangle(viewX / 2 + borderWidth / 2, viewY / 2, wallWidth, borderHeight, {isStatic: true,
+            }),
+            Bodies.rectangle((viewX + borderWidth) / 2, viewY / 2, wallWidth, borderHeight, {
+                isStatic: true,
                 render: {
                     fillStyle: "#00011c00",
-                }}),
-            Bodies.rectangle(viewX / 2 - borderWidth / 2, viewY / 2, wallWidth, borderHeight, {isStatic: true,
+                }
+            }),
+            Bodies.rectangle((viewX - borderWidth) / 2, viewY / 2, wallWidth, borderHeight, {
+                isStatic: true,
                 render: {
                     fillStyle: "#00011c00",
-                }})
+                }
+            })
         ]);
 
-        let wallWidth2 = wallWidth;
         //  盒子底部挡板
-        const leftBottom = Bodies.rectangle((viewX - boxSizeWidth / 2) / 2 - 2 * wallWidth, boxSizeHeight + paddingTop + 2 * wallWidth, boxSizeWidth / 2.4, wallWidth2, {
+        const leftBottom = Bodies.rectangle(530, 970, 420, wallWidth, {
             isStatic: true,
-            chamfer: wallWidth,
             angle: Math.PI * 0.1,
             render: {
                 sprite: {
-                    yScale: 1.5,
-                    xScale: .8,
-                    texture: widthTexture,
+                    texture: slopeTexture,
                 }
             }
         });
-        const rightBottom = Bodies.rectangle((viewX - boxSizeWidth / 2) / 2 + boxSizeWidth / 2 + 2 * wallWidth, boxSizeHeight + paddingTop + 2 * wallWidth, boxSizeWidth / 2.4, wallWidth2, {
+
+        const rightBottom = Bodies.rectangle(1170, 970, 420, wallWidth, {
             isStatic: true,
-            chamfer: wallWidth,
             angle: -Math.PI * 0.1,
             render: {
                 sprite: {
-                    yScale: 1.5,
-                    xScale: .8,
-                    texture: widthTexture,
+                    texture: slopeTexture,
                 }
             }
         });
-        centerBottom = Bodies.rectangle(viewX / 2, boxSizeHeight + paddingTop + 3.5 * wallWidth, 7 * wallWidth, wallWidth2, {
+
+        centerBottom = Bodies.rectangle(850, 1030, 320, wallWidth, {
             isStatic: true,
-            chamfer: wallWidth,
             render: {
                 sprite: {
-                    yScale: 1.5,
-                    xScale: 3,
-                    texture: shortTexture,
+                    texture: middleTexture,
                 }
             }
         });
 
         //  抽奖盒子
         World.add(world, [
-            Bodies.rectangle((viewX - boxSizeWidth) / 2 + boxSizeWidth / 2, paddingTop, boxSizeWidth + wallWidth, wallWidth2, {isStatic: true,
+            Bodies.rectangle(850, paddingTop, 1040, wallWidth, {
+                isStatic: true,
                 render: {
                     sprite: {
-                        yScale: 1.5,
-                        xScale: 2.05,
-                        texture: widthTexture,
+                        texture: boxWidthTexture,
                     }
-                }}),
-            Bodies.rectangle((viewX - boxSizeWidth) / 2 + boxSizeWidth, boxSizeHeight / 2 + paddingTop + 10, wallWidth2, boxSizeHeight + 2 *  wallWidth, {isStatic: true,
+                }
+            }),
+            Bodies.rectangle(1350, 495, wallWidth, 870, {
+                isStatic: true,
                 render: {
                     sprite: {
-                        yScale: 1.95,
-                        xScale: 1.5,
-                        texture: heightTexture,
+                        texture: boxHeightTexture,
                     }
-                }}),
+                }
+            }),
             //底部挡板换成两个挡板
             leftBottom,
             rightBottom,
             centerBottom,
-            Bodies.rectangle((viewX - boxSizeWidth) / 2, boxSizeHeight / 2 + paddingTop + 10, wallWidth2, boxSizeHeight +  2 *  wallWidth, {isStatic: true,
+            Bodies.rectangle(350, 495, wallWidth, 870, {
+                isStatic: true,
                 render: {
                     sprite: {
-                        yScale: 1.95,
-                        xScale: 1.5,
-                        texture: heightTexture,
+                        texture: boxHeightTexture,
                     }
-                }})
+                }
+            })
         ]);
 
         //添加收球轨道
-        let trackY = boxSizeHeight + paddingTop + boxSizeHeight * .5;
-        let track = Bodies.rectangle(viewX / 2 - ballSize * 6, trackY - 50, ballSize * 26, wallWidth, {
-            isStatic: true, angle: -Math.PI * 0.03,
+        let track = Bodies.rectangle(610, 1250, 1040, wallWidth, {
+            isStatic: true,
+            angle: -Math.PI * 0.03,
             render: {
                 sprite: {
-                    yScale: 1,
-                    xScale: 2.1,
-                    texture: widthTexture,
+                    texture: boxWidthTexture,
                 }
             }
         });
-        trackLeft = Bodies.rectangle(viewX / 2 - ballSize * 18 - wallWidth, trackY - ballSize * 3 + wallWidth / 2, wallWidth, ballSize * 6, {
+
+        trackLeft = Bodies.rectangle(110, 1200, wallWidth, 240, {
             isStatic: true,
             render: {
                 sprite: {
-                    yScale: .5,
-                    xScale: 1,
-                    texture: heightTexture,
+                    texture: trackObstructTexture,
                 }
             }
         });
-        //let trackRight = Bodies.rectangle(viewX / 2 +  ballSize * 2, trackY - wallWidth, wallWidth, ballSize * 3, {isStatic: true});
         World.add(world, [
             track,
             trackLeft,
-            //trackRight
         ]);
 
         //  抽奖盒子旋转的棍子
-        stick = Bodies.rectangle((viewX - boxSizeWidth) / 2 + boxSizeWidth / 2, boxSizeHeight / 2 + (boxSizeWidth - boxSizeHeight) / 2 + 80, boxSizeHeight, wallWidth, {
+        stick = Bodies.rectangle(850, 580, 800, wallWidth, {
             isStatic: true,
-            chamfer: wallWidth / 2,
             render: {
                 sprite: {
-                    yScale: 1,
-                    xScale: 1.8,
                     texture: stickTexture,
                 }
             }
@@ -345,12 +357,12 @@
             }
 
             if (startExtract) {
-                for(let index in balls.bodies){
+                for (let index in balls.bodies) {
 
                     let body = balls.bodies[index];
 
-                    if (body.position.y > 1020) {
-                        if(!currentPeople.includes(index)){
+                    if (body.position.y > 1030) {
+                        if (!currentPeople.includes(index)) {
                             currentPeople.push(index);
                             //添加到对应的人名单中
                             $GAME.updateRank(index)
@@ -358,31 +370,26 @@
                         }
 
                         if (selectPeopleNumber <= 0) {
-
-                            for(let o of currentPeople){
-                                console.log("任命",people[o]);
-                            }
-
                             $GAME.stopExtract();
-							
-                            setTimeout(()=>{
+
+                            setTimeout(() => {
                                 //console.log(balls.bodies.length)
-                                for(let index in balls.bodies){
+                                for (let index in balls.bodies) {
                                     let body = balls.bodies[index];
-                                    if (body.position.y > 1010) {
-                                        if(!currentPeople.includes(index)){
-                                            console.log("------放回去-------",index, people[index]);                                            
-                                            Matter.Body.setPosition(body, { x: 800, y: 250 });
+                                    if (body.position.y > 1020) {
+                                        if (!currentPeople.includes(index)) {
+                                            console.log("------放回去-------", index, people[index]);
+                                            Matter.Body.setPosition(body, {x: 800, y: 250});
                                         }
                                     }
                                 }
 
-                                for(let index of currentPeople){
+                                for (let index of currentPeople) {
                                     let ball = balls.bodies[index]
 
-                                    if(ball.position.y < 1020){
-                                        console.log("------放出来-------",index, people[index]);                                      
-                                        Matter.Body.setPosition(ball, { x: viewX / 2, y: 1060 });
+                                    if (ball.position.y < 1030) {
+                                        console.log("------放出来-------", index, people[index]);
+                                        Matter.Body.setPosition(ball, {x: viewX / 2, y: 1060});
                                     }
                                 }
                             }, 500);
@@ -397,67 +404,83 @@
     })();
 
     const $GAME = {
-        startRotate:()=>{
+        startRotate: () => {
             startRotate = true;
         },
 
-        stopRotate:()=>{
+        stopRotate: () => {
             startRotate = false;
         },
 
-        startExtract: ()=>{
+        startExtract: () => {
+
+            if (gameStep === 1) {
+                $rankLabel.html("三等奖");
+                $rankList.html("");
+            } else if (gameStep === 4) {
+                $rankLabel.html("二等奖");
+                $rankList.html("");
+            } else if (gameStep === 8) {
+                $rankLabel.html("一等奖");
+                $rankList.html("");
+            } else if (gameStep === 9) {
+                $rankLabel.html("特等奖");
+                $rankList.html("");
+            }
+
             startExtract = true;
             Matter.Body.setAngle(centerBottom, -Math.PI * 0.2);
-            Matter.Body.setPosition(centerBottom, { x: viewX / 2 + 60 , y: boxSizeHeight + 285 });
+            Matter.Body.setPosition(centerBottom, {x: 880, y: 1110});
             $GAME.stopRotate();
 
-            let trackY = boxSizeHeight + paddingTop + boxSizeHeight * .5;
-            Matter.Body.setPosition(trackLeft, { x: viewX / 2 - ballSize * 18 - wallWidth , y: trackY - ballSize * 3 + wallWidth / 2 });
-        	Body.setAngle(trackLeft, 0)
-        
-        	//将底部小球全部移动到一侧
-        	for(let index in balls.bodies){
+            Matter.Body.setPosition(trackLeft, {
+                x: 110,
+                y: 1200
+            });
+            Body.setAngle(trackLeft, 0);
 
-                    let body = balls.bodies[index];
-                    
-                    if(body.position.x < 300 && body.position.y > 1200){
-                    	Matter.Body.setPosition(body, { x: 1500, y : 1200 });
-                    }
-                    
-                    
-        	}
+            //将底部小球全部移动到一侧
+            for (let index in balls.bodies) {
+
+                let body = balls.bodies[index];
+
+                if (body.position.x < 300 && body.position.y > 1200) {
+                    Matter.Body.setPosition(body, {x: 1500, y: 1200});
+                }
+
+
+            }
         },
 
-        stopExtract:()=>{
+        stopExtract: () => {
             startExtract = false;
             Matter.Body.setAngle(centerBottom, 0);
-            Matter.Body.setPosition(centerBottom, { x: viewX / 2, y: boxSizeHeight + paddingTop + 3.5 * wallWidth });
+            Matter.Body.setPosition(centerBottom, {x: 850, y: 1030});
 
             $GAME.startRotate();
 
             canIClickBlankSpace = false;
-            setTimeout(()=>{
-                let trackY = boxSizeHeight + paddingTop + boxSizeHeight * .5;
-                Body.setAngle(trackLeft, -Math.PI *.5)
-                Matter.Body.setPosition(trackLeft, { x: viewX / 2 - ballSize * 21, y: trackY - 5 *wallWidth });
-               
-                
-                setTimeout(()=>{
-                	 canIClickBlankSpace = true;
+            setTimeout(() => {
+                Body.setAngle(trackLeft, -Math.PI * .5);
+                Matter.Body.setPosition(trackLeft, {x: 10, y: 1100});
+
+                setTimeout(() => {
+                    canIClickBlankSpace = true;
+                    //TODO 10秒后可以再次摇奖
                 }, 10000)
-                
+                //TODO 5秒后打开挡板
             }, 5000)
         },
 
-        refreshBall: ()=>{
+        refreshBall: () => {
             let index = ballsTexture.length;
-            let load = ()=>{
+            let load = () => {
                 index--;
-                if(index === 0){
+                if (index === 0) {
                     let index = 0;
                     let height = parseInt(people.length / 10) + 1;
                     //加入抽奖人小球
-                    balls = Composites.stack((viewX - boxSizeWidth) / 2 + wallWidth, paddingTop + wallWidth, 10, height, 0, 0, (x, y) => {
+                    balls = Composites.stack(390, 120, 10, height, 0, 0, (x, y) => {
 
                         let id = index++;
 
@@ -471,12 +494,12 @@
                         balltext.width = 115;
                         balltext.height = 115;
                         balltext.getContext("2d").drawImage(image, 0, 0);
-                        balltext.getContext("2d").fillStyle="#333";
-                        balltext.getContext("2d").font="bold 25px 微软雅黑"; //bold
-                        if(people[id].length === 3){
-                            balltext.getContext("2d").fillText(people[id] ,20,60);
-                        }else{
-                            balltext.getContext("2d").fillText(people[id] ,30,60);
+                        balltext.getContext("2d").fillStyle = "#333";
+                        balltext.getContext("2d").font = "bold 25px 微软雅黑"; //bold
+                        if (people[id].length === 3) {
+                            balltext.getContext("2d").fillText(people[id], 20, 60);
+                        } else {
+                            balltext.getContext("2d").fillText(people[id], 30, 60);
                         }
 
                         balltext.getContext("2d").textAlign = "center";
@@ -491,7 +514,6 @@
                                     xScale: .9,
                                     yScale: .9,
                                     texture: balltext.toDataURL("image/png"),
-                                    // text: id,
                                 }
                             }
                         });
@@ -501,7 +523,7 @@
                 }
             };
 
-            for(let i = 0; i < ballsTexture.length; i++ ){
+            for (let i = 0; i < ballsTexture.length; i++) {
                 let image = new Image();
                 image.src = ballsTexture[i];
                 image.onload = load;
@@ -510,7 +532,29 @@
         },
 
         updateRank: (index) => {
-            //console.log(index)
+            let name = people[index];
+            $rankList.append(`<div class="item">${name}<div>`);
+
+
+            let type = "";
+            if (gameStep <= 3) {
+                type = "three";
+            } else if (gameStep <= 7) {
+                type = "two";
+            } else if (gameStep === 8) {
+                type = "one";
+            } else if (gameStep === 9) {
+                type = "super";
+            }
+
+            let array = localStorage.getItem(type);
+            if (array) {
+                array += `,${name}`;
+            } else {
+                array = `${name}`
+            }
+
+            localStorage.setItem(type, array);
         }
     };
 
@@ -523,14 +567,14 @@
         let currKey = e.keyCode || e.which || e.charCode;
         if (currKey === 32) {
 
-            if(startExtract || !canIClickBlankSpace){
+            if (startExtract || !canIClickBlankSpace) {
                 // console.log("阻止")
                 return;
             }
 
             // console.log("穿过了", startExtract, canIClickBlankSpace);
 
-            switch (++gameStep){
+            switch (++gameStep) {
                 //三等奖 10人 三轮
                 case 1:
                     selectPeopleNumber = 10;
@@ -576,7 +620,7 @@
                     $GAME.startExtract();
                     break;
                 default:
-                    alert("抽奖结束")
+                //alert("抽奖结束")
 
             }
 
