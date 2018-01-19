@@ -64,8 +64,8 @@
         }
 
         .rank-list .item {
-            background: #003cff80;
-            border: 2px solid #f7ee26;
+           // background: #003cff80;
+           // border: 2px solid #f7ee26;
             border-radius: 10px;
             line-height: 30px;
             text-align: center;
@@ -103,8 +103,104 @@
 
 
 <script>
-    localStorage.clear();
 
+    let $rankLabel = $("#rankLabel");
+    let $rankList = $("#rankList");
+
+    let people = ["杨小航", "赵钺", "付贵森", "付强",
+        "张西玲", "刘建", "徐辉", "马斌", "谷耀峰",
+        "付佳炜", "张紫晨", "宋红京", "王隽", "李斌",
+        "张志玉", "张锐", "崔屾", "李瑞娟", "周美景",
+        "赵迅", "王文博", "刘啸", "胡春明", "张娜",
+        "廖伟庆", "时春艳", "郭洁", "王泽岗", "于海洋",
+        "张秀云", "张同乐", "金晓芳", "孙明", "张萌萌",
+        "王迪", "王子轩", "曹东", "周启鑫", "林洲", "刘超",
+        "张博", "余世祥", "白文", "王建志", "张少东", "焦彭通",
+        "范治磊", "陈永廷", "刘鸿晶", "张涛", "卿卫文", "刘勇", "邹肖琳",
+        "谢冰", "肖成伟", "李晓丹", "王诗尧", "赵贵全", "李克岩",
+        "郑钢", "杨高", "刘先智", "赵博飞", "程都", "刘禹良",
+        "段智夫", "孙鑫", "郁洋", "陶启森", "宋峰", "李泽国",
+        "吕瑞雪", "池白露", "陶斯亮", "陈炎", "柴治田", "王敬峰",
+        "杨金垚", "桑登科", "胡莎", "姜娣", "李秋晨", "童能能",
+        "李丝雨", "王佩剑"];
+
+    let gameStep = ~~localStorage.getItem("gameStep");
+    let gameTimes = localStorage.getItem("gameTimes");
+    let timeStamp = new Date().getTime();
+
+    if(gameTimes !== null && gameTimes !== undefined){
+    }else {
+        gameTimes = 1;
+    }
+
+    //上次游戏结束则此次重新开始
+    if (gameStep === 10) {
+        gameStep = 0;
+    }
+
+    //上次没有正常结束
+    if(gameStep !== 0){
+        //获取 上一次的 游戏次数 和 游戏时间
+
+        if(gameTimes === 0){
+            gameTimes = 1;
+        }
+
+        console.log("============", gameTimes);
+
+        let removeList = [];
+        for(let i = 0; i < localStorage.length; i++){
+            let key = localStorage.key(i);
+
+            if(key.startsWith(`${gameTimes}_`)){
+                timeStamp = key.split("_")[1];
+                console.log('------------------',key, localStorage[key]);
+                removeList = removeList.concat(localStorage.getItem(key).split(","));
+            }
+        }
+
+        console.log(removeList, timeStamp);
+
+        people = people.filter(item => {
+            return !removeList.includes(item);
+        });
+
+        console.log(people.length);
+
+        let type = "";
+        if (gameStep <= 3) {
+            $rankLabel.html("三等奖");
+            type = "three";
+        } else if (gameStep <= 7) {
+            $rankLabel.html("二等奖");
+            type = "two";
+        } else if (gameStep <= 8) {
+            $rankLabel.html("一等奖");
+            type = "one";
+        } else if (gameStep <= 10) {
+            $rankLabel.html("特等奖");
+            type = "super";
+        }
+
+        let storageKey = `${gameTimes}_${timeStamp}_${type}`;
+        console.log(storageKey)
+        let nameList = [];
+        if(localStorage.getItem(storageKey)){
+            nameList = localStorage.getItem(storageKey).split(",");
+        }
+
+
+        for(let i = 0; i < nameList.length; i++){
+            $rankList.append(`<div class="item">${nameList[i]}<div>`);
+        }
+
+        localStorage.setItem("gameTimes", gameTimes);
+    }
+
+
+</script>
+
+<script>
     const viewX = 1700;
     const viewY = 1700;
     const borderWidth = 2400;
@@ -186,22 +282,7 @@
         // render.mouse = mouse;
     })();
 
-    let people = ["杨小航", "赵钺", "付贵森", "付强",
-        "张西玲", "刘建", "徐辉", "马斌", "谷耀峰",
-        "付佳炜", "张紫晨", "宋红京", "王隽", "李斌",
-        "张志玉", "张锐", "崔屾", "李瑞娟", "周美景",
-        "赵迅", "王文博", "刘啸", "胡春明", "张娜",
-        "廖伟庆", "时春艳", "郭洁", "王泽岗", "于海洋",
-        "张秀云", "张同乐", "金晓芳", "孙明", "张萌萌",
-        "王迪", "王子轩", "曹东", "周启鑫", "林洲", "刘超",
-        "张博", "余世祥", "白文", "王建志", "张少东", "焦彭通",
-        "范治磊", "陈永廷", "刘鸿晶", "张涛", "卿卫文", "刘勇", "邹肖琳",
-        "谢冰", "肖成伟", "李晓丹", "王诗尧", "赵贵全", "李克岩",
-        "郑钢", "杨高", "刘先智", "赵博飞", "程都", "刘禹良",
-        "段智夫", "孙鑫", "郁洋", "陶启森", "宋峰", "李泽国",
-        "吕瑞雪", "池白露", "陶斯亮", "陈炎", "柴治田", "王敬峰",
-        "杨金垚", "桑登科", "胡莎", "姜娣", "李秋晨", "童能能",
-        "李丝雨", "王佩剑"];
+
 
     //当前选中的人
     let currentPeople = [];
@@ -217,8 +298,7 @@
 
     let selectPeopleNumber = 10;
 
-    let $rankLabel = $("#rankLabel");
-    let $rankList = $("#rankList");
+
 
     (function () {
         // 添加整体边框
@@ -229,9 +309,9 @@
                     fillStyle: "rgba(113, 135, 147, 0)",
                 }
             }),
-            Bodies.rectangle(viewX / 2, borderHeight - 100, borderWidth * 2, wallWidth, {
+            Bodies.rectangle(viewX / 2, borderHeight, borderWidth * 2, wallWidth / 2, {
                 isStatic: true,
-                angle: Math.PI * 0.03,
+                angle: 0,
                 render: {
                     fillStyle: "rgba(113, 135, 147, 0.70)",
                 }
@@ -338,7 +418,7 @@
         ]);
 
         //  抽奖盒子旋转的棍子
-        stick = Bodies.rectangle(850, 580, 800, wallWidth, {
+        stick = Bodies.rectangle(850, 580, 770, wallWidth, {
             isStatic: true,
             render: {
                 sprite: {
@@ -420,7 +500,6 @@
         },
 
         startExtract: () => {
-
             if (gameStep === 1) {
                 $rankLabel.html("三等奖");
                 $rankList.html("");
@@ -548,21 +627,25 @@
                 type = "super";
             }
 
-            let array = localStorage.getItem(type);
+            let storageKey = `${gameTimes}_${timeStamp}_${type}`;
+
+            let array = localStorage.getItem(storageKey);
             if (array) {
                 array += `,${name}`;
             } else {
                 array = `${name}`
             }
 
-            localStorage.setItem(type, array);
+            localStorage.setItem(storageKey, array);
+
+            if(gameStep === 10){
+                localStorage.setItem("gameTimes", ++gameTimes);
+            }
         }
     };
 
     $GAME.refreshBall();
 
-
-    let gameStep = 0;
     document.onkeyup = e => {
         e = e || event;
         let currKey = e.keyCode || e.which || e.charCode;
@@ -589,7 +672,6 @@
                     selectPeopleNumber = 10;
                     $GAME.startExtract();
                     break;
-
 
                 //二等奖 5人 四轮
                 case 4:
@@ -625,9 +707,11 @@
                     $GAME.startExtract();
                     break;
                 default:
-                //alert("抽奖结束")
-
+                    gameStep--;
+                    break;
             }
+
+            localStorage.setItem("gameStep", gameStep);
 
         }
     };
