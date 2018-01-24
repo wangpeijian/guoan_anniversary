@@ -25,7 +25,7 @@
         }
 
         body {
-            background: #00011c url('./static/img/background.jpg') center / cover no-repeat;
+            background: #d10000 url('./static/img/background.jpg') center / cover no-repeat;
             transform: translate3d(0, 0, 0);
         }
 
@@ -44,12 +44,12 @@
         }
 
         .rank-label {
-            border: 2px solid #d07000;
+            border: 2px solid #fcff00;
             border-radius: 5px;
             line-height: 40px;
             text-align: center;
             font-weight: bold;
-            color: #f0c800;
+            color: #fcff00;
             width: 160px;
             background: #d20804 linear-gradient(-45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
             background-size: 40px 40px;
@@ -75,12 +75,172 @@
             font-size: 16px;
             color: #f7ee26;
         }
+
+        /*倒计时样式*/
+        .count-down-block{
+            position: fixed;
+            top: 100px;
+            left: 200px;
+            margin-left: -35px;
+            height: 70px;
+            width: 70px;
+           /* background: #d20804;*/
+            transform: translate3d(0, 0, 0);
+        }
+
+        .circle-box-left, .circle-box-right{
+            height: 100%;
+            width: 50%;
+            float: left;
+            /*background: #d20804;*/
+            overflow: hidden;
+        }
+
+        .count-down-block .ring{
+            height: 100%;
+            width: 200%;
+            overflow: hidden;
+            border-radius: 50%;
+            /*transform: rotate(180deg);*/
+            position: relative;
+        }
+
+        .circle-box-right .ring{
+            left: -100%;
+        }
+
+        .circle-box-right .ring .ring-cover{
+            left: 50%;
+            right: 0;
+        }
+
+        .count-down-block .ring::after{
+            content: ' ';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            bottom: 10%;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        .count-down-block .ring::before{
+            content: ' ';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ffc704;
+            border-radius: 50%;
+        }
+
+        .ring .ring-cover{
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 50%;
+            z-index: 2;
+            background: #d10000;
+        }
+
+        .count-down-block .times{
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            z-index: 9;
+            line-height: 56px;
+            font-size: 30px;
+            text-align: center;
+            background: #d10000;
+           /* background: url("./static/img/timerBackground.png");*/
+            border-radius: 50%;
+            color: #ffc704;
+        }
+
+        .count-down-block .times .num{
+            padding: 0 10px;
+        }
+
+        .circle-box-left .ring.active {
+            animation: leftRotate 15s linear;
+        }
+
+        @keyframes leftRotate {
+            0% {
+                transform: rotate(0deg)
+            }
+            50% {
+                transform: rotate(0deg)
+            }
+            100% {
+                transform: rotate(180deg)
+            }
+        }
+
+
+        .circle-box-right .ring.active{
+            animation: rightRotate 15s linear;
+        }
+
+        @keyframes rightRotate {
+            0% {
+                transform: rotate(0deg)
+            }
+            50% {
+                transform: rotate(180deg)
+            }
+            100% {
+                transform: rotate(180deg)
+            }
+        }
+
+        /*下落的图片*/
+        .end-image{
+            top: 0;
+            position: fixed;
+            width: 700px;
+            margin-left: -350px;
+            left: 50%;
+            z-index: 999;
+            transform: translate3d(0,-450px,0);
+            transition: 2s;
+        }
+
+        .end-image.active{
+            transform: translate3d(0,0,0);
+        }
     </style>
 </head>
 
 <body>
 <div id="app-box">
     <div class="game-box" id="game-box"></div>
+
+    <!--倒计时小球-->
+    <div class="count-down-block">
+        <div class="circle-box-left">
+            <div class="ring" id="leftRing">
+                <div class="ring-cover"></div>
+            </div>
+        </div>
+        <div class="circle-box-right">
+            <div class="ring" id="rightRing">
+                <div class="ring-cover"></div>
+            </div>
+        </div>
+
+        <div class="times">
+            <span class="num" id="countNum">0</span>
+        </div>
+    </div>
+
+    <!--下落的庆祝图片-->
+    <image class="end-image" id="endImage" src="./static/img/gameOver.png"></image>
 
     <div class="rank-block">
         <image src="./static/img/rankTitle.png"/>
@@ -106,23 +266,20 @@
 
     let $rankLabel = $("#rankLabel");
     let $rankList = $("#rankList");
+    let $countNum = $("#countNum");
+    let $leftRing = $("#leftRing");
+    let $rightRing = $("#rightRing");
+    let $endImage = $("#endImage");
+    let $countNumText = 0;
 
-    let people = ["杨小航", "赵钺", "付贵森", "付强",
-        "张西玲", "刘建", "徐辉", "马斌", "谷耀峰",
-        "付佳炜", "张紫晨", "宋红京", "王隽", "李斌",
-        "张志玉", "张锐", "崔屾", "李瑞娟", "周美景",
-        "赵迅", "王文博", "刘啸", "胡春明", "张娜",
-        "廖伟庆", "时春艳", "郭洁", "王泽岗", "于海洋",
-        "张秀云", "张同乐", "金晓芳", "孙明", "张萌萌",
-        "王迪", "王子轩", "曹东", "周启鑫", "林洲", "刘超",
-        "张博", "余世祥", "白文", "王建志", "张少东", "焦彭通",
-        "范治磊", "陈永廷", "刘鸿晶", "张涛", "卿卫文", "刘勇", "邹肖琳",
-        "谢冰", "肖成伟", "李晓丹", "王诗尧", "赵贵全", "李克岩",
-        "郑钢", "杨高", "刘先智", "赵博飞", "程都", "刘禹良",
-        "段智夫", "孙鑫", "郁洋", "陶启森", "宋峰", "李泽国",
-        "吕瑞雪", "池白露", "陶斯亮", "陈炎", "柴治田", "王敬峰",
-        "杨金垚", "桑登科", "胡莎", "姜娣", "李秋晨", "童能能",
-        "李丝雨", "王佩剑"];
+    let people = ["杨金垚","桑登科","李克岩","郑钢","刘先智","赵博飞","程都","刘禹良","段智夫","孙鑫",
+        "郁洋","陶启森","宋峰","李泽国","吕瑞雪","池白露","王佩剑","白文","王建志","张少东","焦彭通",
+        "范治磊","陈永挺","刘鸿晶","武媛楠","张景","宋红京","张博","张西玲","张紫晨","刘小欢","朱昌",
+        "武华","刘建","谷耀锋","马斌","付佳炜","王隽","李斌","周美景","张锐","胡春明","刘啸","赵迅",
+        "李瑞娟","崔山山","王文博","张志玉","李宗泽","张娜","张同乐","金晓芳","张萌萌","孙小明","时春艳",
+        "郭洁","赵静","廖伟庆","王泽岗","于海洋","韩萍萍","童能能","赵彩绘","李丝雨","曹东","周启鑫",
+        "张浩岩","林洲","余世祥","刘超","柴治田","王敬峰","卿卫文","张涛","李晓丹","肖成伟","邹肖琳",
+        "谢冰","陈炎","刘勇","王诗尧","陶斯亮","杨高","赵贵全","韩瑞颐","姜娣","胡莎","李秋晨","闫光辉"];
 
     let gameStep = ~~localStorage.getItem("gameStep");
     let gameTimes = localStorage.getItem("gameTimes");
@@ -207,10 +364,10 @@
     const borderHeight = 1700;
     const wallWidth = 40;
     const paddingTop = 80;
-    const ballSize = 45;
+    const ballSize = 38;
 
-    const ballsTexture = [ './static/img/ball2Texture.png', './static/img/ball3Texture.png'];
-    const ballsColor = ['#fcff00', "#fcff00"];
+    const ballsTexture = [ './static/img/ball1Texture.png', './static/img/ball3Texture.png'];
+    const ballsColor = ['#760000', "#fcff00"];
     const stickTexture = './static/img/stickTexture.png';
     const slopeTexture = './static/img/slopeTexture.png';
     const middleTexture = './static/img/middleTexture.png';
@@ -281,8 +438,6 @@
         // World.add(world, mouseConstraint);
         // render.mouse = mouse;
     })();
-
-
 
     //当前选中的人
     let currentPeople = [];
@@ -535,6 +690,25 @@
         },
 
         stopExtract: () => {
+            //倒计时开始
+            $rightRing.addClass("active");
+            $leftRing.addClass("active");
+            $countNumText = 15;
+            $countNum.html($countNumText);
+            let timer = setInterval(()=>{
+                $countNum.html(--$countNumText);
+                if($countNumText === 0){
+                    $rightRing.removeClass("active");
+                    $leftRing.removeClass("active");
+                    clearInterval(timer);
+
+                    //最后一步结束的时候
+                    if(gameStep === 10){
+                        $endImage.addClass('active');
+                    }
+                }
+            }, 1000);
+
             startExtract = false;
             Matter.Body.setAngle(centerBottom, 0);
             Matter.Body.setPosition(centerBottom, {x: 850, y: 1030});
@@ -551,7 +725,7 @@
                     //TODO 10秒后可以再次摇奖
                 }, 10000)
                 //TODO 5秒后打开挡板
-            }, 5000)
+            }, 5000);
         },
 
         refreshBall: () => {
@@ -577,7 +751,7 @@
                         balltext.height = ballSize * 2;
                         balltext.getContext("2d").drawImage(image, 0, 0, 40, 40, 0, 0, ballSize * 2, ballSize * 2);
                         balltext.getContext("2d").fillStyle = ballsColor[index % ballsColor.length];
-                        balltext.getContext("2d").font = "bold 25px 微软雅黑"; //bold
+                        balltext.getContext("2d").font = "bold 20px 微软雅黑"; //bold
                         if (people[id].length === 3) {
                             balltext.getContext("2d").fillText(people[id], 10, 50);
                         } else {
