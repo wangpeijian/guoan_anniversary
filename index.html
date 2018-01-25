@@ -167,7 +167,7 @@
         }
 
         .circle-box-left .ring.active {
-            animation: leftRotate 15s linear;
+            animation: leftRotate 3s linear;
         }
 
         @keyframes leftRotate {
@@ -184,7 +184,7 @@
 
 
         .circle-box-right .ring.active{
-            animation: rightRotate 15s linear;
+            animation: rightRotate 3s linear;
         }
 
         @keyframes rightRotate {
@@ -423,20 +423,20 @@
     })();
 
     (function () {
-        // 添加鼠标控制
-        // const mouse = Mouse.create(render.canvas),
-        //     mouseConstraint = MouseConstraint.create(engine, {
-        //         mouse: mouse,
-        //         constraint: {
-        //             stiffness: 0.2,
-        //             render: {
-        //                 visible: false
-        //             }
-        //         }
-        //     });
-        //
-        // World.add(world, mouseConstraint);
-        // render.mouse = mouse;
+        //添加鼠标控制
+        const mouse = Mouse.create(render.canvas),
+            mouseConstraint = MouseConstraint.create(engine, {
+                mouse: mouse,
+                constraint: {
+                    stiffness: 0.2,
+                    render: {
+                        visible: false
+                    }
+                }
+            });
+
+        World.add(world, mouseConstraint);
+        render.mouse = mouse;
     })();
 
     //当前选中的人
@@ -693,7 +693,7 @@
             //倒计时开始
             $rightRing.addClass("active");
             $leftRing.addClass("active");
-            $countNumText = 15;
+            $countNumText = 3;
             $countNum.html($countNumText);
             let timer = setInterval(()=>{
                 $countNum.html(--$countNumText);
@@ -722,10 +722,10 @@
 
                 setTimeout(() => {
                     canIClickBlankSpace = true;
-                    //TODO 10秒后可以再次摇奖
-                }, 10000)
-                //TODO 5秒后打开挡板
-            }, 5000);
+                    //TODO 1秒后可以再次摇奖
+                }, 2000)
+                //TODO 2秒后打开挡板
+            }, 1000);
         },
 
         refreshBall: () => {
